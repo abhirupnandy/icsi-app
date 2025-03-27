@@ -68,12 +68,12 @@ class UserResource extends Resource
 				       ->schema([
 					       TextInput::make('trans_ID')
 					                ->label('Transaction ID')
-					                ->placeholder('Enter transaction ID')
-					                ->required(),
+						       ->placeholder('Enter transaction ID'),
+			
 					       TextInput::make('trans_amount')
 					                ->label('Transaction Amount')
-					                ->placeholder('Enter transaction amount')
-					                ->required(),
+						       ->placeholder('Enter transaction amount'),
+						       
 					       Toggle::make('payment_verified')
 					             ->label('Payment Verified')
 					             ->default(false)
@@ -85,8 +85,8 @@ class UserResource extends Resource
 							       // Call the email function with correct transaction details
 							       self::sendPaymentVerificationEmail($record, $state, $trans_ID,
 								       $trans_amount);
-						       })
-					             ->required(),
+						       }),
+						       
 				       
 				       ]),
 				Section::make('Role Information')

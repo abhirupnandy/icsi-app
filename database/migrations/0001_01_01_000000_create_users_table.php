@@ -17,8 +17,8 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-			$table->string('phone');
-			$table->boolean('payment_verified');
+	        $table->string('phone')->nullable()->default(null);
+	        $table->boolean('payment_verified')->default(false);
 			$table->enum('role', ['admin', 'board', 'member'])->default('member');
 			$table->text('bio')->nullable()->default(null);
 			$table->string('orcid_id')->nullable()->default(null)->unique();
