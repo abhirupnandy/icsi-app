@@ -26,6 +26,7 @@ return new class extends Migration
 			$table->string('website_url')->nullable()->default(null);
 	        $table->string('trans_ID')->nullable()->default(null);
 	        $table->string('trans_amount')->nullable()->default(null);
+	        $table->timestamp('trans_date')->nullable()->default(null);
 	        $table->rememberToken();
             $table->timestamps();
         });

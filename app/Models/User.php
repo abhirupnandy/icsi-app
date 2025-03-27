@@ -27,6 +27,7 @@ class User extends Authenticatable implements RenewPasswordContract
         'password',
 	    'phone',
 	    'payment_verified',
+	    'role',
 	    'bio',
 	    'orcid_id',
 	    'scholar_url',
@@ -34,6 +35,7 @@ class User extends Authenticatable implements RenewPasswordContract
 	    'force_renew_password',
 	    'trans_ID',
 	    'trans_amount',
+	    'trans_date',
     ];
 
     /**
@@ -58,4 +60,10 @@ class User extends Authenticatable implements RenewPasswordContract
             'password' => 'hashed',
         ];
     }
+	
+	public function blogs()
+	{
+		return $this->hasMany(Blog::class);
+	}
+	
 }
