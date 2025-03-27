@@ -32,6 +32,8 @@ class UserFactory extends Factory
 	        'payment_verified' => fake()->boolean(),
 	        'role' => fake()->randomElement(['board', 'member']),
             'remember_token' => Str::random(10),
+	        'trans_ID' => Str::random(6),
+	        'trans_amount' => fake()->randomFloat(2, 0, 1000),
         
         ];
     }

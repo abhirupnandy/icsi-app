@@ -26,6 +26,7 @@ use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 use Ysfkaya\FilamentPhoneInput\PhoneInputNumberType;
@@ -65,12 +66,28 @@ class UserResource extends Resource
 				       ->aside()
 				       ->description('Account Status of User')
 				       ->schema([
+					       TextInput::make('trans_ID')
+					                ->label('Transaction ID')
+					                ->placeholder('Enter transaction ID')
+					                ->required(),
+					       TextInput::make('trans_amount')
+					                ->label('Transaction Amount')
+					                ->placeholder('Enter transaction amount')
+					                ->required(),
 					       Toggle::make('payment_verified')
 					             ->label('Payment Verified')
 					             ->default(false)
-					             ->afterStateUpdated(fn ($state, $set, $get, $record) => self::sendPaymentVerificationEmail($record, $state))
+						       ->afterStateUpdated(function ($state, $set, $get, $record) {
+							       // Get updated values from the form inputs
+							       $trans_ID = $get('trans_ID') ?? $record->trans_ID;
+							       $trans_amount = $get('trans_amount') ?? $record->trans_amount;
+							       
+							       // Call the email function with correct transaction details
+							       self::sendPaymentVerificationEmail($record, $state, $trans_ID,
+								       $trans_amount);
+						       })
 					             ->required(),
-					       
+				       
 				       ]),
 				Section::make('Role Information')
 				       ->aside()
@@ -137,37 +154,52 @@ class UserResource extends Resource
 	/**
 	 * Sends an email when the payment status is updated.
 	 */
-	protected static function sendPaymentVerificationEmail($user, $status)
+	protected static function sendPaymentVerificationEmail($user, $status, $trans_ID, $trans_amount)
 	{
 		if ($status) {
+			// Convert trans_amount to float to prevent errors
+			$trans_amount = is_numeric($trans_amount) ? (float) $trans_amount : 0.00;
+			
+			// Update user details
+			$user->update([
+				'payment_verified' => true,
+				'trans_ID' => $trans_ID,
+				'trans_amount' => $trans_amount,
+			]);
+			
+			$user->refresh(); // Ensure latest values are used
+			
 			// Send payment verification email
 			try {
-				//				\Mail::to($user->email)->send(new \App\Mail\PaymentVerifiedMail($user));
-				$user->notify(new PaymentVerified($user));
-				\Log::info('Payment verification email sent to ' . $user->email);
+				$user->notify(new PaymentVerified($user, $trans_ID, $trans_amount));
+				\Log::info('Payment verification email sent to '.$user->email);
 			} catch (\Exception $e) {
-				\Log::error('Email sending failed: ' . $e->getMessage());
+				\Log::error('Email sending failed: '.$e->getMessage());
 			}
 			
 			// Send admin notification
 			Notification::make()
 			            ->title('✅ Payment Verified')
 			            ->success()
-			            ->body("Payment has been successfully verified.<br>User: <strong>{$user->name}</strong> <br>Email:<strong> {$user->email}</strong>")
+				->body("Payment has been successfully verified.<br>User: <strong>{$user->name}</strong> <br>Email: <strong>{$user->email}</strong><br>Transaction ID: <strong>{$user->trans_ID}</strong><br>Amount: <strong>₹".number_format($user->trans_amount,
+						2).'</strong>')
 			            ->send();
 		} else {
-			// Send notification if payment is revoked
+			// If payment verification is revoked
+			$user->update([
+				'payment_verified' => false,
+				'trans_ID' => null,
+				'trans_amount' => null,
+			]);
+			
+			$user->refresh(); // Get latest data
+			
 			Notification::make()
 			            ->title('❌ Payment Revoked')
 			            ->danger()
-			            ->body("Payment verification has been revoked.<br>User: <strong>{$user->name}</strong> <br>Email:<strong> {$user->email}</strong>")
+				->body("Payment verification has been revoked.<br>User: <strong>{$user->name}</strong> <br>Email: <strong>{$user->email}</strong>")
 			            ->send();
 		}
 	}
-	
-	
-	
-	
-	
 	
 }

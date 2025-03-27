@@ -32,6 +32,8 @@ class User extends Authenticatable implements RenewPasswordContract
 	    'scholar_url',
 	    'website_url',
 	    'force_renew_password',
+	    'trans_ID',
+	    'trans_amount',
     ];
 
     /**

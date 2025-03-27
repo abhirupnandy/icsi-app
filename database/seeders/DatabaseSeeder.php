@@ -22,27 +22,8 @@ class DatabaseSeeder extends Seeder
 	        'phone' => '1234567890',
 	        'payment_verified' => true,
 	        'role' => 'admin',
-        
+	        'trans_ID' => '123456',
+	        'trans_amount' => 1000,
         ]);
-		
-		User::factory()->create([
-			'name' => 'Abhirup BOARD',
-			'email' => 'test.board@example.com',
-			'password' => bcrypt('password'),
-			'phone' => '1234567890',
-			'payment_verified' => true,
-			'role' => 'board',
-		
-		]);
-		
-		User::factory()->create([
-			'name' => 'Abhirup MEMBER',
-			'email' => 'test.member@example.com',
-			'password' => bcrypt('password'),
-			'phone' => '1234567890',
-			'payment_verified' => true,
-			'role' => 'member',
-		
-		]);
     }
 }
