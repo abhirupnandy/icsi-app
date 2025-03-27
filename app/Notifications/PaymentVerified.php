@@ -14,7 +14,7 @@ class PaymentVerified extends Notification
 {
 	use Queueable;
 	
-	protected string $user;
+	protected object $user;
 	public string $user_name;
 	protected string $transID;
 	protected string $trans_amount;
@@ -34,11 +34,8 @@ class PaymentVerified extends Notification
 		$this->trans_amount = Number::currency((float) $trans_amount, 'INR');
 	}
 	
-	
 	/**
 	 * Get the notification's delivery channels.
-	 *
-	 * @return array<int, string>
 	 */
 	public function via(object $notifiable) : array
 	{
@@ -56,8 +53,12 @@ class PaymentVerified extends Notification
 		return (new MailMessage)
 			->greeting("Hello, $this->user_name")
 			->subject("Your payment has been verified on $appName")
-			->line('Your payment has been verified successfully on '.$date.'.') // Use $date
-			->line(new HtmlString('<strong>Transaction ID:</strong> '.$this->transID)) // Use $this->transID
+			->tag('payment_verified') // Add a mail tag
+			->metadata('category', 'payment') // Add metadata for providers like Mailgun
+			->metadata('user_id', $this->user->id) // Track user ID
+			
+			->line('Your payment has been verified successfully on '.$date.'.')
+			->line(new HtmlString('<strong>Transaction ID:</strong> '.$this->transID))
 			->line(new HtmlString('<strong>Amount:</strong> '.$this->trans_amount))
 			->line('Thank you for your payment.')
 			->action('Go to app', filament()->getUrl($this->tenant));
@@ -65,13 +66,14 @@ class PaymentVerified extends Notification
 	
 	/**
 	 * Get the array representation of the notification.
-	 *
-	 * @return array<string, mixed>
 	 */
 	public function toArray(object $notifiable) : array
 	{
 		return [
-			//
+			'user_id' => $this->user->id,
+			'transID' => $this->transID,
+			'amount' => $this->trans_amount,
+			'timestamp' => now(),
 		];
 	}
 }
