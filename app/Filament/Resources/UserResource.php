@@ -9,6 +9,7 @@ use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Components\Actions;
 use Filament\Forms\Components\Actions\Action;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -82,6 +83,11 @@ class UserResource extends Resource
 						             'member' => 'Member',
 					             ])
 					             ->required(),
+					       TextInput::make('password')
+					                ->label('Password')
+					                ->password()
+					                ->placeholder('Enter password of user (default set to password)')
+					                ->default('password'),
 				       ]),
 			]);
 	}
@@ -98,9 +104,10 @@ class UserResource extends Resource
 		            ->trueIcon('heroicon-o-check-badge')
 		            ->falseIcon('heroicon-o-x-mark')
 	                ->sortable(),
+	            TextColumn::make('role')->sortable(),
             ])
             ->filters([
-                
+	            //
             ])
 	        ->defaultSort('name')
 	        
