@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
 	        'phone' => '1234567890',
 	        'payment_verified' => true,
 	        'role' => 'admin',
+        
         ]);
 		
 		User::factory()->create([
@@ -31,6 +32,7 @@ class DatabaseSeeder extends Seeder
 			'phone' => '1234567890',
 			'payment_verified' => true,
 			'role' => 'board',
+		
 		]);
 		
 		User::factory()->create([
@@ -40,6 +42,7 @@ class DatabaseSeeder extends Seeder
 			'phone' => '1234567890',
 			'payment_verified' => true,
 			'role' => 'member',
+		
 		]);
     }
 }

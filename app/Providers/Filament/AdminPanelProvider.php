@@ -23,6 +23,8 @@ use Illuminate\Support\Facades\Blade;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Joaopaulolndev\FilamentEditProfile\FilamentEditProfilePlugin;
 use Joaopaulolndev\FilamentEditProfile\Pages\EditProfilePage;
+use Yebor974\Filament\RenewPassword\RenewPasswordPlugin;
+use Yebor974\Filament\RenewPassword\Traits\RenewPassword;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -80,7 +82,10 @@ class AdminPanelProvider extends PanelProvider
 		            ->shouldRegisterNavigation(false)
 		            ->customProfileComponents([
 						UpdateProfileComponent::class
-			            		            ])
+		            ]),
+		        RenewPasswordPlugin::make()
+		                           ->forceRenewPassword()
+		                           ->timestampColumn(),
 	        ]);
     }
 }

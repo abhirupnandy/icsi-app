@@ -6,6 +6,7 @@ use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource\RelationManagers;
 use App\Mail\PaymentVerifiedMail;
 use App\Models\User;
+use App\Notifications\PaymentVerified;
 use Filament\Forms;
 use Filament\Forms\Components\Actions;
 use Filament\Forms\Components\Actions\Action;
@@ -83,11 +84,6 @@ class UserResource extends Resource
 						             'member' => 'Member',
 					             ])
 					             ->required(),
-					       TextInput::make('password')
-					                ->label('Password')
-					                ->password()
-					                ->placeholder('Enter password of user (default set to password)')
-					                ->default('password'),
 				       ]),
 			]);
 	}
@@ -146,7 +142,8 @@ class UserResource extends Resource
 		if ($status) {
 			// Send payment verification email
 			try {
-				\Mail::to($user->email)->send(new \App\Mail\PaymentVerifiedMail($user));
+				//				\Mail::to($user->email)->send(new \App\Mail\PaymentVerifiedMail($user));
+				$user->notify(new PaymentVerified($user));
 				\Log::info('Payment verification email sent to ' . $user->email);
 			} catch (\Exception $e) {
 				\Log::error('Email sending failed: ' . $e->getMessage());

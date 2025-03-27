@@ -32,6 +32,7 @@ class UserFactory extends Factory
 	        'payment_verified' => fake()->boolean(),
 	        'role' => fake()->randomElement(['board', 'member']),
             'remember_token' => Str::random(10),
+        
         ];
     }
 

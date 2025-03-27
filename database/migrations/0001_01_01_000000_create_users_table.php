@@ -24,7 +24,8 @@ return new class extends Migration
 			$table->string('orcid_id')->nullable()->default(null)->unique();
 			$table->string('scholar_url')->nullable()->default(null)->unique();
 			$table->string('website_url')->nullable()->default(null);
-            $table->rememberToken();
+	        
+	        $table->rememberToken();
             $table->timestamps();
         });
 
