@@ -34,5 +34,9 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+	
+	'contact' => [
+		'email' => env('CONTACT_FORM_EMAIL', 'admin@icsi.net.in'),
+	],
 
 ];

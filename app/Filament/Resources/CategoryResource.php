@@ -14,6 +14,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Str;
 
 class CategoryResource extends Resource
 {
@@ -27,10 +28,20 @@ class CategoryResource extends Resource
 			->schema([
 				TextInput::make('name')
 				         ->label('Name')
-				         ->required(),
+					->required()
+					->live(onBlur: true)
+					->afterStateUpdated(function ($state, callable $set, callable $get) {
+						if (!$get('slug')) {
+							$slug = Str::slug(implode(' ',
+								array_slice(explode(' ', $state), 0, 5)));
+							$set('slug', $slug);
+						}
+					}),
 				TextInput::make('slug')
 				         ->label('Slug')
-				         ->required(),
+					->required()
+					->helperText('Auto-generated from title but can be edited manually.')
+					->unique(ignoreRecord: true),
 			]);
 	}
 	

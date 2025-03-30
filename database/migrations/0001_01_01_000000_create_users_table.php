@@ -26,7 +26,11 @@ return new class extends Migration
 			$table->string('website_url')->nullable()->default(null);
 	        $table->string('trans_ID')->nullable()->default(null);
 	        $table->string('trans_amount')->nullable()->default(null);
-	        $table->timestamp('trans_date')->nullable()->default(null);
+	        $table->string('trans_date')->nullable()->default(null);
+	        $table->enum('membership_type', ['lifetime', 'annual', 'institutional'])->nullable()
+	              ->default(null);
+	        $table->string('membership_start_date')->nullable()->default(null);
+	        $table->string('membership_end_date')->nullable()->default(null);
 	        $table->rememberToken();
             $table->timestamps();
         });

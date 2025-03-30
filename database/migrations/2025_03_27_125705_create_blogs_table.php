@@ -4,55 +4,38 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
-	/**
-	 * Run the migrations.
-	 */
+class CreateBlogsTable extends Migration
+{
 	public function up() : void
 	{
 		Schema::create('blogs', function (Blueprint $table) {
-			$table->id(); // Primary key, not nullable
-			$table->string('thumbnail')->nullable(); // Optional thumbnail
-			$table->string('title'); // Required title
-			$table->string('slug')->unique(); // Required unique slug
-			$table->text('content'); // Required content
-			$table->foreignId('category_id')
-			      ->constrained('categories') // Explicitly specify table name
-			      ->cascadeOnDelete(); // Delete blog if category is deleted
-			$table->foreignId('user_id')
-			      ->nullable() // Optional author
-			      ->constrained('users') // References users table
-			      ->nullOnDelete(); // Set to NULL if user is deleted
-			$table->json('tags')->nullable(); // Optional tags
-			$table->boolean('published')->default(false); // Required status with default
-			$table->dateTime('published_at')->nullable(); // Optional publication date
+			$table->id();
+			$table->string('title');
+			$table->string('slug')->unique();
+			$table->unsignedBigInteger('category_id');
+			$table->unsignedBigInteger('user_id'); // Must be integer
+			$table->text('content');
+			$table->string('thumbnail')->nullable();
+			$table->string('thumbnail_alt')->nullable();
+			$table->string('seo_title')->nullable();
+			$table->string('meta_description')->nullable();
+			$table->string('focus_keyword')->nullable();
+			$table->string('seo_slug')->nullable();
+			$table->string('og_title')->nullable();
+			$table->string('og_description')->nullable();
+			$table->string('og_image')->nullable();
+			$table->json('tags')->nullable();
+			$table->boolean('published')->default(false);
+			$table->timestamp('published_at')->nullable();
+			$table->timestamps();
 			
-			// SEO Fields
-			$table->string('seo_title', 70)->nullable(); // Optional SEO title
-			$table->string('meta_description', 160)->nullable(); // Optional meta description
-			$table->string('focus_keyword')->nullable(); // Optional focus keyword
-			$table->string('seo_slug')->nullable()->unique(); // Optional unique SEO slug
-			$table->string('og_title')->nullable(); // Optional Open Graph title
-			$table->string('og_description')->nullable(); // Optional Open Graph description
-			$table->string('thumbnail_alt')->nullable(); // Optional alt text
-			
-			$table->softDeletes(); // deleted_at, not nullable
-			$table->timestamps(); // created_at and updated_at, not nullable
+			$table->foreign('category_id')->references('id')->on('categories')->onDelete('cascade');
+			$table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
 		});
 	}
 	
-	/**
-	 * Reverse the migrations.
-	 */
 	public function down() : void
 	{
-		// Drop foreign key constraints first to avoid dependency issues
-		Schema::table('blogs', function (Blueprint $table) {
-			$table->dropForeign(['category_id']);
-			$table->dropForeign(['user_id']);
-		});
-		
-		// Then drop the table
 		Schema::dropIfExists('blogs');
 	}
-};
+}

@@ -2,7 +2,12 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Resources\BlogResource\Widgets\BlogStats;
+use App\Filament\Widgets\EventStats;
+use App\Filament\Widgets\StatsOverview;
+use App\Filament\Widgets\UserStats;
 use App\Livewire\UpdateProfileComponent;
+use Filament\Facades\Filament;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -34,6 +39,7 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
+	        ->darkMode(false)
             ->login()
 	        ->passwordReset()
 	        ->profile()
@@ -50,6 +56,9 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
+	            StatsOverview::class,
+	            UserStats::class,
+	            EventStats::class,
 	            //                Widgets\FilamentInfoWidget::class,
             ])
 	        ->userMenuItems([
@@ -58,7 +67,6 @@ class AdminPanelProvider extends PanelProvider
 		                             ->url(fn (): string => EditProfilePage::getUrl())
 		                             ->icon('heroicon-s-user-circle')
 	        ])
-	        
 	        ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

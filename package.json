@@ -3,8 +3,8 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite",
-        "serve"     : "composer run dev",
+	  "dev"       : "vite -- --host 0.0.0.0",
+	  "serve"     : "composer run dev",
 	  "php-serve" : "@php artisan serve --host 0.0.0.0 --port=8000"
     },
     "devDependencies": {

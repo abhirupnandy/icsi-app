@@ -4,8 +4,11 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\BlogResource\Pages;
 use App\Filament\Resources\BlogResource\RelationManagers;
+use App\Filament\Resources\BlogResource\Widgets\BlogStats;
+use App\Filament\Widgets\StatsOverview;
 use App\Models\Blog;
 use App\Models\Category;
+use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
@@ -24,12 +27,14 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class BlogResource extends Resource
 {
 	protected static ?string $model = Blog::class;
 	
 	protected static ?string $navigationIcon = 'heroicon-o-document-duplicate';
+	
 	
 	public static function form(Form $form) : Form
 	{
@@ -42,13 +47,30 @@ class BlogResource extends Resource
 					                ->label('Title')
 					                ->required()
 					                ->maxLength(255)
-					                ->columnSpanFull(),
+						       ->columnSpanFull()
+						       ->live(onBlur: true)
+						       ->afterStateUpdated(function ($state, callable $set, callable $get) {
+							       if (!$get('slug')) {
+								       $slug = Str::slug(implode(' ',
+									       array_slice(explode(' ', $state), 0, 5)));
+								       $set('slug', $slug);
+							       }
+						       }),
 					       TextInput::make('slug')
 					                ->label('Slug')
 					                ->required()
+						       ->helperText('Auto-generated from title but can be edited manually.')
 					                ->unique(table: Blog::class, column: 'slug', ignoreRecord: true)
 					                ->maxLength(255)
 					                ->columnSpanFull(),
+					       Select::make('user_id')
+					             ->label('Author')
+					             ->options(User::pluck('name', 'id')->toArray())
+					             ->default(Auth::id()) // Set the default to the current user
+					             ->disabled() // Prevent users from changing it
+					             ->dehydrated() // Ensure the value is still saved in the database
+					             ->columnSpanFull(),
+					       
 					       Select::make('category_id')
 					             ->label('Category')
 					             ->options(Category::pluck('name', 'id')->toArray())
@@ -58,36 +80,35 @@ class BlogResource extends Resource
 						             TextInput::make('name')
 						                      ->label('Category Name')
 						                      ->required()
-						                      ->maxLength(255),
+							             ->maxLength(255)
+							             ->live(onBlur: true)
+							             ->afterStateUpdated(function (
+								             $state,
+								             callable $set,
+								             callable $get
+							             ) {
+								             if (!$get('slug')) {
+									             $slug = Str::slug(implode(' ',
+										             array_slice(explode(' ', $state), 0, 5)));
+									             $set('slug', $slug);
+								             }
+							             }),
 						             TextInput::make('slug')
 						                      ->label('Slug')
 						                      ->required()
+							             ->helperText('Auto-generated from title but can be edited manually.')
 						                      ->unique(table: Category::class, column: 'slug')
 						                      ->maxLength(255),
 					             ])
 					             ->createOptionUsing(function (array $data) : int {
 						             return Category::create($data)->id;
 					             }),
-					       Select::make('user_id')
-					             ->label('Author')
-					             ->options(\App\Models\User::pluck('name', 'id')->toArray())
-					             ->searchable()
-					             ->visible(fn() => in_array(Auth::user()->role, ['admin']))
-					             ->helperText('Only admins can change the author.'),
-					       TextInput::make('user_id')
-					                ->label('Author')
-					                ->disabled()
-					                ->dehydrated(false)
-					                ->formatStateUsing(fn(
-						                $state,
-						                $record
-					                ) => $record?->user?->name ?? 'Not assigned')
-					                ->visible(fn() => !in_array(Auth::user()->role,
-						                ['admin', 'board']))
-					                ->helperText('The author is automatically set to the current user upon creation.'),
 					       TagsInput::make('tags')
 					                ->label('Tags')
-					                ->helperText('Separate tags with commas.'),
+						       ->separator(',') // Ensures tags are separated by commas
+						       ->splitKeys(['Enter', ',']) // Allows Enter key as well
+						       ->helperText('Separate tags with commas or Enter.'),
+				       
 				       ])
 				       ->columns(2)
 				       ->collapsible(),
@@ -103,7 +124,6 @@ class BlogResource extends Resource
 					                 ->image()
 					                 ->directory('blog-thumbnails')
 					                 ->visibility('public')
-					                 ->maxSize(1024)
 					                 ->disk('public')
 					                 ->preserveFilenames(false)
 					                 ->getUploadedFileNameForStorageUsing(function ($file) {
@@ -131,12 +151,21 @@ class BlogResource extends Resource
 					                ->columnSpanFull(),
 					       TextInput::make('focus_keyword')
 					                ->label('Focus Keyword')
-					                ->maxLength(255),
+						       ->maxLength(255)
+						       ->live(onBlur: true)
+						       ->afterStateUpdated(function ($state, callable $set, callable $get) {
+							       if (!$get('seo_slug')) {
+								       $slug = Str::slug($state);
+								       $set('seo_slug', $slug);
+							       }
+						       }),
+					       
 					       TextInput::make('seo_slug')
 					                ->label('SEO Slug')
-					                ->unique(table: Blog::class, column: 'seo_slug',
-					                         ignoreRecord: true)
-					                ->maxLength(255),
+						       ->unique(table: Blog::class, column: 'seo_slug', ignoreRecord: true)
+						       ->maxLength(255)
+						       ->helperText('Auto-generated from Focus Keyword but can be edited manually.'),
+					       
 					       TextInput::make('og_title')
 					                ->label('Open Graph Title')
 					                ->maxLength(255)
@@ -150,7 +179,6 @@ class BlogResource extends Resource
 					                 ->image()
 					                 ->directory('blog-og-images')
 					                 ->visibility('public')
-					                 ->maxSize(1024)
 					                 ->disk('public')
 					                 ->preserveFilenames(false)
 					                 ->getUploadedFileNameForStorageUsing(function ($file) {
@@ -202,7 +230,7 @@ class BlogResource extends Resource
 				          ->label('Focus Keyword')
 				          ->toggleable(isToggledHiddenByDefault: true),
 				ToggleColumn::make('published')
-				            ->label('Status'),
+					->label('Published'),
 				TextColumn::make('published_at')
 				          ->date()
 				          ->sortable(),
@@ -245,5 +273,20 @@ class BlogResource extends Resource
 			'create' => Pages\CreateBlog::route('/create'),
 			'edit' => Pages\EditBlog::route('/{record}/edit'),
 		];
+	}
+	
+	public function mutateFormDataBeforeCreate(array $data) : array
+	{
+		// Set user_id to the current authenticated user's ID on creation
+		$data['user_id'] = Auth::id();
+		return $data;
+	}
+	
+	public function mutateFormDataBeforeSave(array $data) : array
+	{
+		// Preserve the original user_id on update (since form can't change it)
+		$record = $this->getRecord();
+		$data['user_id'] = $record->user_id;
+		return $data;
 	}
 }

@@ -1,13 +1,26 @@
-@import 'tailwindcss';
+/*!*@import 'tailwindcss';*!*/
 
+/*!*@source "../views";*!*/
+/*!*@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views!*.blade.php';*!*/
+/*!*@source '../../storage/framework/views!*.php';*!*/
+/*!*@source '..!**!*.blade.php';*!*/
+/*!*@source '..!**!*.js';*!*/
 
-@source "../views";
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
-@source '../**/*.blade.php';
-@source '../**/*.js';
-
-@theme {
+/*@layer base {*/
+:root {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+
+    --bg-accent: #004aad; /* Define the custom color directly */
+}
+
+/*}*/
+
+/* Apply the accent background */
+.bg-accent {
+    background-color: var(--bg-accent);
+}
+
+.text-accent {
+    color: var(--bg-accent);
 }
