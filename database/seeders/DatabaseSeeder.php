@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
+use Faker\Factory as Faker;
 
 class DatabaseSeeder extends Seeder
 {
@@ -15,20 +16,53 @@ class DatabaseSeeder extends Seeder
 	 */
 	public function run() : void
 	{
-		// Generate 10 random users
+		$faker = Faker::create();
+		
+		// Generate additional random users (non-board)
 		User::factory(10)->create();
 		
-		// Predefined users with fixed roles
-		$users = [
+		// Create exactly one President and one General Secretary
+		$requiredBoardRoles = [
+			'president',
+			'general_secretary',
+		];
+		
+		foreach ($requiredBoardRoles as $role) {
+			User::factory()->create([
+				'name' => $faker->name(),
+				'email' => strtolower($role).'@example.com',
+				'role' => 'board',
+				'board_member_role' => $role,
+			]);
+		}
+		
+		// Define other board roles that should have at least one member
+		$otherBoardRoles = [
+			'vice_president',
+			'joint_secretary',
+			'treasurer',
+			'executive_committee',
+			'former_president',
+			'former_general_secretary',
+			'former_vice_president',
+		];
+		
+		// Ensure at least one of each board role with fake names
+		foreach ($otherBoardRoles as $role) {
+			User::factory()->create([
+				'name' => $faker->name(),
+				'email' => strtolower($role).'@example.com',
+				'role' => 'board',
+				'board_member_role' => $role,
+			]);
+		}
+		
+		// Create admin and a general member
+		$predefinedUsers = [
 			[
 				'name' => 'Abhirup ADMIN',
 				'email' => 'test.admin@example.com',
 				'role' => 'admin',
-			],
-			[
-				'name' => 'Abhirup BOARD MEMBER',
-				'email' => 'test.board@example.com',
-				'role' => 'board',
 			],
 			[
 				'name' => 'Abhirup MEMBER',
@@ -37,9 +71,9 @@ class DatabaseSeeder extends Seeder
 			],
 		];
 		
-		foreach ($users as $userData) {
+		foreach ($predefinedUsers as $userData) {
 			$startDate = Carbon::now();
-			$endDate = $startDate->addYears(99); // Lifetime membership
+			$endDate = $startDate->copy()->addYears(99); // Lifetime membership
 			
 			User::factory()->create(array_merge($userData, [
 				'password' => bcrypt('password'),
@@ -58,38 +92,30 @@ class DatabaseSeeder extends Seeder
 			[
 				'title' => 'Growth of Scientific Periodicals in India (1948-2000)',
 				'description' => 'The project was awarded to the Society by the **Indian National Science Academy**, for the period of **2014-2017**. Dr. B K Sen was the principal investigator in this project.',
+				'created_at' => now(),
+				'updated_at' => now(),
 			],
 			[
 				'title' => 'Growth of Scientific Societies in India: 1784-1947',
 				'description' => 'The project was awarded to the Society by the **Indian National Science Academy**, for the period of **2009-2013**. Dr. B K Sen was the principal investigator in this project.',
+				'created_at' => now(),
+				'updated_at' => now(),
 			],
 			[
 				'title' => 'Indian Library and Information Science Abstracts (ILSA) 2006-2010',
 				'description' => 'Indian Library and Information Science Abstracts 2006-2010, covering **Indian Library and Information Science Periodicals**, Monographs; Proceedings of Conferences, Seminars, Workshops, etc. published during this period. This volume will be published by **Indian Association of Special Libraries and Information Centres (IASLIC), Kolkata, India**. The work is now published by IASLIC. **Vol. 40-44, 2006-2010, ISSN: 0019-5790**.',
-			],
-			[
-				'title' => 'Indian Library and Information Science Abstracts (ILSA) 2000-2005',
-				'description' => 'Indian Library and Information Science Abstracts 2000-2005, published by **IASLIC**. This volume covers **Indian Library and Information Science Periodicals**; Monographs; Proceedings of Conferences, Seminars, Workshops, etc. published during this period.',
-			],
-			[
-				'title' => 'Indian Library and Information Science Abstracts (ILSA) 1992–1999',
-				'description' => 'Indian Library and Information Science Abstracts 1992-1999, published by **IASLIC**. This volume was released in **October 2003**. In all **3215 entries** were included. It covers **Indian Library and Information Science Periodicals**; Monographs; Proceedings of Conferences, Seminars, Workshops, etc. published during this period.',
+				'created_at' => now(),
+				'updated_at' => now(),
 			],
 			[
 				'title' => 'Max Mueller Bhavan Project - Analyses of Libraries and Sources of Information in India',
 				'description' => 'The project was awarded to the Society on **4th October 2002**. In fact, there were **three projects** related to **India, Delhi, and Calcutta**. The Project was completed with **record speed in just five months**.',
-			],
-			[
-				'title' => 'Annotated Bibliography of Rare Books at the Central Secretariat Library',
-				'description' => 'The project was awarded to the Society on **22 January 2003** and was completed in **about three months’ time**. Society annotated **more than 1500 books**.',
-			],
-			[
-				'title' => 'National Forests Commission Report, 2006',
-				'description' => 'The Project was awarded to the Society in **January 2006** for the **technical editing and technical writing** of the **Commission Report and its recommendations** (conducted by **ICFRE, Dehra Dun, India**). The Project was completed with **record speed in just two months**.',
+				'created_at' => now(),
+				'updated_at' => now(),
 			],
 		];
 		
-		// Insert research projects
+		// Insert research projects with timestamps
 		Research::insert($projects);
 	}
 }

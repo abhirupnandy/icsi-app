@@ -7,6 +7,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -16,9 +17,11 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Storage;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 use Ysfkaya\FilamentPhoneInput\PhoneInputNumberType;
 
@@ -35,6 +38,7 @@ class UserResource extends Resource
 			       ->aside()
 			       ->description('Personal Information of User')
 			       ->schema([
+				       
 				       TextInput::make('name')
 				                ->label('Name')
 				                ->helperText('Name of the invited user')
@@ -52,6 +56,13 @@ class UserResource extends Resource
 				                 ->initialCountry('IN')
 				                 ->displayNumberFormat(PhoneInputNumberType::NATIONAL)
 				                 ->placeholder('Enter phone of user'),
+				       FileUpload::make('avatar')
+				                 ->label('Profile Picture')
+				                 ->avatar()
+				                 ->imageEditor()
+				                 ->circleCropper()
+				                 ->directory('avatars')
+				                 ->helperText('Upload your profile picture.'),
 			       ]),
 			
 			// Account Status Section
@@ -98,26 +109,27 @@ class UserResource extends Resource
 				                 ->native(false)
 				                 ->closeOnDateSelection()
 				                 ->required()
+					       ->live(onBlur: true)
 				                 ->format('F j, Y')
 				                 ->placeholder('Enter membership start date')
-				                 ->afterStateUpdated(function ($state, $set, $get) {
-					                 if (!$get('membership_start_date')) {
-						                 return;
-					                 }
-					                 
-					                 $startDate = Carbon::parse($get('membership_start_date'));
-					                 
-					                 if ($state === 'annual') {
-						                 $set('membership_end_date',
-							                 $startDate->copy()->addYear()->format('F j, Y'));
-					                 } elseif ($state === 'institutional') {
-						                 $set('membership_end_date',
-							                 $startDate->copy()->addYears(5)->format('F j, Y'));
-					                 } elseif ($state === 'lifetime') {
-						                 $set('membership_end_date',
-							                 $startDate->copy()->addYears(20)->format('F j, Y'));
-					                 }
-						       }),
+					       ->afterStateUpdated(function ($state, $set, $get) {
+						       if (!$state || !$get('membership_type')) {
+							       return;
+						       }
+						       $startDate = Carbon::parse($state);
+						       $membershipType = $get('membership_type');
+						       
+						       $endDate = match ($membershipType) {
+							       'annual' => $startDate->addYear(),
+							       'institutional' => $startDate->addYears(5),
+							       'lifetime' => $startDate->addYears(99),
+							       default => null,
+						       };
+						       
+						       if ($endDate) {
+							       $set('membership_end_date', $endDate->format('F j, Y'));
+						       }
+					       }),
 				       Select::make('membership_type')
 				             ->label('Membership Type')
 				             ->live(onBlur: true)
@@ -128,27 +140,28 @@ class UserResource extends Resource
 					             'institutional' => 'Institutional',
 				             ])
 				             ->default('none') // "None" is pre-selected
-				             ->rule('not_in:none') // Prevents submission if "None" is selected
+					       ->rule('not_in:none')// Prevents
+					       // submission if "None" is selected
 				             ->placeholder('Select membership type')
 				             ->helperText('Select a valid membership type (cannot be "None")')
-				             ->afterStateUpdated(function ($state, $set, $get) {
-					             if (!$get('membership_start_date')) {
-						             return;
-					             }
-					             
-					             $startDate = Carbon::parse($get('membership_start_date'));
-					             
-					             if ($state === 'annual') {
-						             $set('membership_end_date',
-							             $startDate->copy()->addYear()->format('F j, Y'));
-					             } elseif ($state === 'institutional') {
-						             $set('membership_end_date',
-							             $startDate->copy()->addYears(5)->format('F j, Y'));
-					             } elseif ($state === 'lifetime') {
-						             $set('membership_end_date',
-							             $startDate->copy()->addYears(20)->format('F j, Y'));
-					             }
-				             }),
+					       ->afterStateUpdated(function ($state, $set, $get) {
+						       if (!$state || !$get('membership_type')) {
+							       return;
+						       }
+						       $startDate = Carbon::parse($state);
+						       $membershipType = $get('membership_type');
+						       
+						       $endDate = match ($membershipType) {
+							       'annual' => $startDate->addYear(),
+							       'institutional' => $startDate->addYears(5),
+							       'lifetime' => $startDate->addYears(99),
+							       default => null,
+						       };
+						       
+						       if ($endDate) {
+							       $set('membership_end_date', $endDate->format('F j, Y'));
+						       }
+					       }),
 				       
 				       
 				       TextInput::make('membership_end_date')
@@ -160,7 +173,6 @@ class UserResource extends Resource
 			       
 			       ]),
 			
-			// Role Information Section
 			Section::make('Role Information')
 			       ->aside()
 			       ->description('Role Information of User')
@@ -172,9 +184,48 @@ class UserResource extends Resource
 					             'board' => 'Board',
 					             'member' => 'Member',
 				             ])
-				             ->required(),
-			       ]),
+					       ->required()
+					       ->live(),
+				       
+				       Select::make('board_member_role')
+				             ->label('Board Member Role')
+				             ->searchable()
+				             ->options(function () {
+					             return [
+						             'president' => 'Current President ('.(User::where('board_member_role',
+								             'president')->value('name') ?? 'None').')',
+						             'vice_president' => 'Current Vice President',
+						             'general_secretary' => 'Current General Secretary ('.(User::where('board_member_role',
+								             'general_secretary')->value('name') ?? 'None').')',
+						             'joint_secretary' => 'Current Joint Secretary',
+						             'treasurer' => 'Current Treasurer',
+						             'executive_committee' => 'Executive Committee Member',
+						             'former_president' => 'Former President',
+						             'former_general_secretary' => 'Former General Secretary',
+						             'former_vice_president' => 'Former Vice President',
+					             ];
+				             })
+				             ->hidden(fn($get) => $get('role') !== 'board')
+				             ->placeholder('Select Board Member Role')
+				             ->rules([
+					             function ($get, $set) {
+						             return function ($attribute, $value, $fail) {
+							             if (in_array($value, ['president', 'general_secretary'])) {
+								             // Find and remove the existing user holding the role
+								             $existingUser = User::where('board_member_role',
+									             $value)->first();
+								             
+								             if ($existingUser) {
+									             $existingUser->update(['board_member_role' => null]); // Remove their role
+								             }
+							             }
+						             };
+					             },
+				             ]),
+			       ])
+			       ->columns(2),
 		]);
+		
 	}
 	
 	public static function table(Table $table) : Table
@@ -183,7 +234,16 @@ class UserResource extends Resource
 			->columns([
 				TextColumn::make('id')->sortable(),
 				TextColumn::make('name')->searchable()->sortable(),
-				TextColumn::make('email'),
+				ImageColumn::make('avatar')
+				           ->label('Profile Picture')
+				           ->circular()
+				           ->visible(function (User $user) {
+					           
+					           //							   return if ($user->avatar ! == fake.png) {
+					           return $user->avatar !== 'avatars/fake.png';
+					           
+				           })
+				           ->size(50),
 				IconColumn::make('payment_verified')
 				          ->boolean()
 				          ->trueIcon('heroicon-o-check-badge')
@@ -220,6 +280,8 @@ class UserResource extends Resource
 					                                       ->success()
 					                                       ->send();
 				                           }),
+				//				View
+				Tables\Actions\ViewAction::make(),
 			])
 			->bulkActions([
 				Tables\Actions\BulkActionGroup::make([

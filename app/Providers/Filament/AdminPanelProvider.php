@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Resources\BlogResource\Widgets\BlogStats;
+use App\Filament\Widgets\BoardRolesWidget;
 use App\Filament\Widgets\EventStats;
 use App\Filament\Widgets\StatsOverview;
 use App\Filament\Widgets\UserStats;
@@ -19,6 +20,7 @@ use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\View\PanelsRenderHook;
 use Filament\Widgets;
+use Illuminate\Auth\Authenticatable;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -59,6 +61,7 @@ class AdminPanelProvider extends PanelProvider
 	            StatsOverview::class,
 	            UserStats::class,
 	            EventStats::class,
+	            BoardRolesWidget::class,
 	            //                Widgets\FilamentInfoWidget::class,
             ])
 	        ->userMenuItems([

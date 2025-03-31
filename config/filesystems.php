@@ -78,3 +78,12 @@ return [
     ],
 
 ];
+
+
+//use Illuminate\Http\UploadedFile;
+//use Illuminate\Support\Facades\Storage;
+////
+//$file = new UploadedFile(asset('asset/mainLogo.png'), 'mainLogo.png', 'image/png', null, true);
+//$path = $file->store('avatars', 'public');
+////
+//echo Storage::url($path);

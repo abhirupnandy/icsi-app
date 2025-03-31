@@ -12,7 +12,7 @@ class UserPolicy
 	 */
 	public function viewAny(User $user): bool
 	{
-		return $user->role === 'admin';
+		return in_array($user->role, ['admin', 'board', 'member']);
 	}
 	
 	/**
@@ -20,7 +20,7 @@ class UserPolicy
 	 */
 	public function view(User $user, User $model): bool
 	{
-		return $user->role === 'admin' || $user->id === $model->id;
+		return in_array($user->role, ['admin', 'board']) || $model->id === $user->id;
 	}
 	
 	/**
@@ -36,7 +36,7 @@ class UserPolicy
 	 */
 	public function update(User $user, User $model): bool
 	{
-		return $user->role === 'admin' || $user->id === $model->id;
+		return $user->role === 'admin';
 	}
 	
 	/**

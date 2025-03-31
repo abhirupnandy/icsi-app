@@ -199,19 +199,19 @@
 							<dl class="w-64 space-y-8 xl:w-80">
 								<div class="flex flex-col-reverse gap-y-4">
 									<dt class="text-base/7 text-gray-600">Society Registration</dt>
-									<dd class="text-4xl sm:text-5xl font-semibold tracking-tight text-gray-900 break-words sm:break-normal">
+									<dd class="text-3xl sm:text-4xl font-semibold tracking-tight text-gray-900 break-words sm:break-normal">
 										S-38170/2000
 									</dd>
 								</div>
 								<div class="flex flex-col-reverse gap-y-4">
 									<dt class="text-base/7 text-gray-600">NGO Darpan Unique ID</dt>
-									<dd class="text-4xl sm:text-5xl font-semibold tracking-tight text-gray-900 break-words sm:break-normal">
+									<dd class="text-3xl sm:text-4xl font-semibold tracking-tight text-gray-900 break-words sm:break-normal">
 										DL/2019/0232107
 									</dd>
 								</div>
 								<div class="flex flex-col-reverse gap-y-4">
 									<dt class="text-base/7 text-gray-600">Projects Completed</dt>
-									<dd class="text-4xl sm:text-5xl font-semibold tracking-tight text-gray-900">8+</dd>
+									<dd class="text-3xl sm:text-4xl font-semibold tracking-tight text-gray-900">8+</dd>
 								</div>
 							</dl>
 						</div>
@@ -277,114 +277,124 @@
 			</div>
 			
 			<!-- Team section -->
-			<div class="mx-auto mt-32 max-w-7xl px-6 sm:mt-48 lg:px-8 py-4">
-				<div class="mx-auto max-w-2xl lg:mx-0">
-					<h2 class="text-4xl font-semibold tracking-tight text-pretty text-gray-900 sm:text-5xl">Our
-					                                                                                        Team</h2>
-					<p class="mt-6 text-lg/8 text-gray-600">Meet the leaders driving ICSI’s mission forward.</p>
-				</div>
-				
-				<!-- Current Leadership -->
-				<div class="mt-16">
-					<h3 class="text-2xl font-semibold tracking-tight text-gray-900">Current Leadership (Since January
-					                                                                2025)</h3>
-					<div
-						class="mx-auto mt-10 flex flex-wrap justify-center gap-x-8 gap-y-16 text-base/7 max-w-2xl lg:mx-0 lg:max-w-none"
-					>
-						@forelse ($currentLeadership as $member)
-							<div class="w-full sm:w-1/2 lg:w-1/3 flex-shrink-0 max-w-xs text-center">
+			<section class="bg-white py-12">
+				<div class="container mx-auto px-4">
+					<h2 class="text-3xl font-bold text-center text-gray-900 mb-12">Meet Our Team</h2>
+					
+					<!-- Current Leadership -->
+					<div class="mb-16">
+						<h3 class="text-2xl font-semibold text-gray-700 text-center mb-8">Current Leadership</h3>
+						
+						<!-- President -->
+						@foreach($currentLeadership->where('role', 'president') as $leader)
+							<div class="text-center mb-8">
 								<img
-									class="mx-auto size-24 rounded-full"
-									src="{{ $member->image_url }}"
-									alt="Portrait of {{ $member->name }}, {{ $member->role }}"
-									loading="lazy"
+									src="{{ $leader->avatar }}" alt="{{ $leader->name }}"
+									class="w-24 h-24 mx-auto rounded-full shadow-md object-cover"
 								>
-								<h4 class="mt-6 text-base/7 font-semibold tracking-tight text-gray-900">{{ $member->name }}</h4>
-								<p class="text-sm/6 text-gray-600">{{ $member->role }}</p>
+								<h4 class="mt-4 text-lg font-semibold text-gray-900">{{ $leader->name }}</h4>
+								<p class="text-sm text-gray-600 uppercase">{{ str_replace('_', ' ', $leader->role) }}</p>
 							</div>
-						@empty
-							<p class="text-gray-600">No current leadership members available.</p>
-						@endforelse
+						@endforeach
+						
+						<!-- Vice Presidents in one row -->
+						@if($currentLeadership->where('role', 'vice_president')->count() > 0)
+							<div class="flex flex-wrap justify-center gap-x-8 gap-y-10 mb-8">
+								@foreach($currentLeadership->where('role', 'vice_president') as $leader)
+									<div class="text-center w-40">
+										<img
+											src="{{ $leader->avatar }}" alt="{{ $leader->name }}"
+											class="w-24 h-24 mx-auto rounded-full shadow-md object-cover"
+										>
+										<h4 class="mt-4 text-lg font-semibold text-gray-900">{{ $leader->name }}</h4>
+										<p class="text-sm text-gray-600 uppercase">{{ str_replace('_', ' ', $leader->role) }}</p>
+									</div>
+								@endforeach
+							</div>
+						@endif
+						
+						<!-- Other Leadership Roles (General Secretary, Joint Secretary, Treasurer) -->
+						<div class="flex flex-wrap justify-center gap-x-8 gap-y-10">
+							@foreach($currentLeadership->whereNotIn('role', ['president', 'vice_president']) as $leader)
+								<div class="text-center w-40">
+									<img
+										src="{{ $leader->avatar }}" alt="{{ $leader->name }}"
+										class="w-24 h-24 mx-auto rounded-full shadow-md object-cover"
+									>
+									<h4 class="mt-4 text-lg font-semibold text-gray-900">{{ $leader->name }}</h4>
+									<p class="text-sm text-gray-600 uppercase">{{ str_replace('_', ' ', $leader->role) }}</p>
+								</div>
+							@endforeach
+						</div>
+					</div>
+					
+					<!-- Executive Committee Members -->
+					<div class="mb-16">
+						<h3 class="text-2xl font-semibold text-gray-700 text-center mb-8">Executive Committee
+						                                                                  Members</h3>
+						<div class="flex flex-wrap justify-center gap-x-8 gap-y-10">
+							@foreach($ecMembers as $member)
+								<div class="text-center w-40">
+									<img
+										src="{{ $member->avatar }}" alt="{{ $member->name }}"
+										class="w-24 h-24 mx-auto rounded-full shadow-md object-cover"
+									>
+									<h4 class="mt-4 text-lg font-semibold text-gray-900">{{ $member->name }}</h4>
+									<p class="text-sm text-gray-600 uppercase">{{ str_replace('_', ' ', $member->role) }}</p>
+								</div>
+							@endforeach
+						</div>
+					</div>
+					
+					<!-- Former Presidents and Secretaries -->
+					<div class="mb-16">
+						<h3 class="text-2xl font-semibold text-gray-700 text-center mb-8">Former Presidents and
+						                                                                  Secretaries</h3>
+						<div class="flex flex-wrap justify-center gap-x-8 gap-y-10">
+							@foreach($pastMembers as $former)
+								<div class="text-center w-40">
+									<img
+										src="{{ $former->avatar }}" alt="{{ $former->name }}"
+										class="w-24 h-24 mx-auto rounded-full shadow-md object-cover"
+									>
+									<h4 class="mt-4 text-lg font-semibold text-gray-900">{{ $former->name }}</h4>
+									<p class="text-sm text-gray-600 uppercase">{{ str_replace('_', ' ', $former->role) }}</p>
+								</div>
+							@endforeach
+						</div>
 					</div>
 				</div>
-				
-				<!-- Executive Committee Members -->
-				<div class="mt-16">
-					<h3 class="text-2xl font-semibold tracking-tight text-gray-900">Executive Committee Members</h3>
-					<div
-						class="mx-auto mt-10 flex flex-wrap justify-center gap-x-8 gap-y-16 text-base/7 max-w-2xl lg:mx-0 lg:max-w-none"
-					>
-						@forelse ($ecMembers as $member)
-							<div class="w-full sm:w-1/2 lg:w-1/3 flex-shrink-0 max-w-xs text-center">
-								<img
-									class="mx-auto size-24 rounded-full"
-									src="{{ $member->image_url }}"
-									alt="Portrait of {{ $member->name }}, {{ $member->role }}"
-									loading="lazy"
-								>
-								<h4 class="mt-6 text-base/7 font-semibold tracking-tight text-gray-900">{{ $member->name }}</h4>
-								<p class="text-sm/6 text-gray-600">{{ $member->role }}</p>
-							</div>
-						@empty
-							<p class="text-gray-600">No E.C. members available.</p>
-						@endforelse
-					</div>
-				</div>
-				
-				<!-- Past Members -->
-				<div class="mt-16">
-					<h3 class="text-2xl font-semibold tracking-tight text-gray-900">Former Presidents and Secretaries
-					                                                                (Till January 2025)</h3>
-					<div
-						class="mx-auto mt-10 flex flex-wrap justify-center gap-x-8 gap-y-16 text-base/7 max-w-2xl lg:mx-0 lg:max-w-none"
-					>
-						@forelse ($pastMembers as $member)
-							<div class="w-full sm:w-1/2 lg:w-1/3 flex-shrink-0 max-w-xs text-center">
-								<img
-									class="mx-auto size-24 rounded-full"
-									src="{{ $member->image_url }}"
-									alt="Portrait of {{ $member->name }}, {{ $member->role }}"
-									loading="lazy"
-								>
-								<h4 class="mt-6 text-base/7 font-semibold tracking-tight text-gray-900">{{ $member->name }}</h4>
-								<p class="text-sm/6 text-gray-600">{{ $member->role }}</p>
-							</div>
-						@empty
-							<p class="text-gray-600">No past members available.</p>
-						@endforelse
-					</div>
-				</div>
-				
-				<!-- Team Structured Data -->
-				<script type="application/ld+json">
-					{
-						"@context": "https://schema.org",
-						"@type": "Organization",
-						"name": "Information and Communication Society of India",
-						"member": [
-					@foreach($currentLeadership as $member)
-					{
-						"@type": "Person",
-						"name": "{{ $member->name }}",
-				"jobTitle": "{{ $member->role }}",
-				"image": "{{ $member->image_url }}"
-			}{{ !$loop->last ? ',' : '' }}
-					@endforeach
-					@if(!empty($currentLeadership) && !empty($ecMembers))
-					,
-					@endif
-					@foreach($ecMembers as $member)
-					{
-						"@type": "Person",
-						"name": "{{ $member->name }}",
-				"jobTitle": "{{ $member->role }}",
-				"image": "{{ $member->image_url }}"
-			}{{ !$loop->last ? ',' : '' }}
-					@endforeach
-					]
-				}
-				</script>
-			</div>
+			</section>
+		
 		</main>
 	</div>
+	<!-- Team Structured Data -->
+	<script type="application/ld+json">
+		{
+			"@context": "https://schema.org",
+			"@type": "Organization",
+			"name": "Information and Communication Society of India",
+			"member": [
+		@foreach($currentLeadership as $member)
+		{
+			"@type": "Person",
+			"name": "{{ $member->name }}",
+				"jobTitle": "{{ $member->role }}",
+				"image": "{{ $member->avatar }}"
+			}{{ !$loop->last ? ',' : '' }}
+		@endforeach
+		@if(!empty($currentLeadership) && !empty($ecMembers))
+		,
+		@endif
+		@foreach($ecMembers as $member)
+		{
+			"@type": "Person",
+			"name": "{{ $member->name }}",
+				"jobTitle": "{{ $member->role }}",
+				"image": "{{ $member->avatar }}"
+			}{{ !$loop->last ? ',' : '' }}
+		@endforeach
+		]
+	}
+	</script>
 </x-layouts.app>

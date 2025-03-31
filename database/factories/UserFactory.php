@@ -30,6 +30,8 @@ class UserFactory extends Factory
 		// Membership end date should be after start date
 		$endDate = (clone $startDate)->addYears(rand(1, 5));
 		
+		$role = fake()->randomElement(['board', 'member']);
+		
 		return [
 			'name' => fake()->name(),
 			'email' => fake()->unique()->safeEmail(),
@@ -37,13 +39,25 @@ class UserFactory extends Factory
 			'password' => static::$password ??= Hash::make('password'),
 			'phone' => fake()->phoneNumber(),
 			'payment_verified' => fake()->boolean(),
-			'role' => fake()->randomElement(['board', 'member']),
+			'role' => $role,
+			'board_member_role' => $role === 'board' ? fake()->randomElement([
+				'president',
+				'vice_president',
+				'general_secretary',
+				'joint_secretary',
+				'treasurer',
+				'executive_committee',
+				'former_president',
+				'former_general_secretary',
+				'former_vice_president',
+			]) : null,
 			'remember_token' => Str::random(10),
 			'trans_ID' => strtoupper(Str::random(6)),
 			'trans_amount' => fake()->randomFloat(2, 0, 1000),
 			'membership_type' => fake()->randomElement(['lifetime', 'annual', 'institutional']),
 			'membership_start_date' => $startDate->format('F d, Y'),
 			'membership_end_date' => $endDate->format('F d, Y'),
+			'avatar' => 'avatars/fake.png',
 		];
 	}
 	

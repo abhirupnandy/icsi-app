@@ -5,15 +5,18 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Notifications\PaymentVerified;
 use Database\Factories\UserFactory;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasAvatar;
 use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
 use Yebor974\Filament\RenewPassword\Contracts\RenewPasswordContract;
 use Yebor974\Filament\RenewPassword\Traits\RenewPassword;
 
-class User extends Authenticatable implements RenewPasswordContract
+class User extends Authenticatable implements RenewPasswordContract, HasAvatar
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
@@ -31,6 +34,7 @@ class User extends Authenticatable implements RenewPasswordContract
 	    'phone',
 	    'payment_verified',
 	    'role',
+	    'board_member_role',
 	    'bio',
 	    'orcid_id',
 	    'scholar_url',
@@ -42,6 +46,7 @@ class User extends Authenticatable implements RenewPasswordContract
 	    'membership_type',
 	    'membership_start_date',
 	    'membership_end_date',
+	    'avatar',
     ];
 
     /**
@@ -133,4 +138,12 @@ class User extends Authenticatable implements RenewPasswordContract
 		}
 	}
 	
+	
+	public function getFilamentAvatarUrl() : ?string
+	{
+		// TODO: Implement getFilamentAvatarUrl() method.
+		return $this->avatar
+			? Storage::url($this->avatar)
+			: null;
+	}
 }
