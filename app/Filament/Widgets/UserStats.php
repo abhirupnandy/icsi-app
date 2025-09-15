@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Auth;
 class UserStats extends BaseWidget
 {
 	protected static ?string $pollingInterval = '10s';
-	
+
 	protected function getStats() : array
 	{
 		$stats = [
@@ -23,18 +23,18 @@ class UserStats extends BaseWidget
 			    ->color('primary')
 			    ->url(UserResource::getUrl('index',
 				    ['tableFilters' => ['role' => ['value' => 'board']]])),
-			
-			Stat::make('Member Count',
+
+			Stat::make('Verified Member Count',
 				User::where('role', 'member')->where('payment_verified', true)->count())
-			    ->label('Member Count')
-			    ->value(User::where('role', 'member')->where('payment_verified', true)->count())
+			    ->label('Verified Member Count')
+			    ->value(User::where('payment_verified', true)->count())
 			    ->description('Total number of verified members')
 			    ->icon('heroicon-o-users')
 			    ->color('success')
 			    ->url(UserResource::getUrl('index',
 				    ['tableFilters' => ['role' => ['value' => 'member']]])),
 		];
-		
+
 		if (Auth::user()?->role === 'admin' || Auth::user()?->role === 'board') {
 			$stats[] = Stat::make('Non-Paid Users', User::where('payment_verified', false)->count())
 			               ->label('Non-Paid Users')
@@ -45,7 +45,7 @@ class UserStats extends BaseWidget
 			               ->url(UserResource::getUrl('index',
 				               ['tableFilters' => ['payment_verified' => ['value' => '0']]]));
 		}
-		
+
 		return $stats;
 	}
 }

@@ -17,16 +17,16 @@ class DatabaseSeeder extends Seeder
 	public function run() : void
 	{
 		$faker = Faker::create();
-		
+
 		// Generate additional random users (non-board)
 		User::factory(10)->create();
-		
+
 		// Create exactly one President and one General Secretary
 		$requiredBoardRoles = [
 			'president',
 			'general_secretary',
 		];
-		
+
 		foreach ($requiredBoardRoles as $role) {
 			User::factory()->create([
 				'name' => $faker->name(),
@@ -35,7 +35,7 @@ class DatabaseSeeder extends Seeder
 				'board_member_role' => $role,
 			]);
 		}
-		
+
 		// Define other board roles that should have at least one member
 		$otherBoardRoles = [
 			'vice_president',
@@ -46,7 +46,7 @@ class DatabaseSeeder extends Seeder
 			'former_general_secretary',
 			'former_vice_president',
 		];
-		
+
 		// Ensure at least one of each board role with fake names
 		foreach ($otherBoardRoles as $role) {
 			User::factory()->create([
@@ -56,27 +56,34 @@ class DatabaseSeeder extends Seeder
 				'board_member_role' => $role,
 			]);
 		}
-		
+
 		// Create admin and a general member
 		$predefinedUsers = [
 			[
 				'name' => 'Abhirup ADMIN',
 				'email' => 'test.admin@example.com',
 				'role' => 'admin',
+                'password' => bcrypt('password'), // Set a known password for admin
 			],
 			[
 				'name' => 'Abhirup MEMBER',
 				'email' => 'test.member@example.com',
 				'role' => 'member',
+                'password' => bcrypt('password'), // Set a known password for member
 			],
+            [
+                'name' => 'Abhirup Nandy',
+                'email' => 'abhirupnandy.online@gmail.com',
+                'role' => 'admin',
+                'password' => bcrypt('password'), // Set a known password for admin
+            ]
 		];
-		
+
 		foreach ($predefinedUsers as $userData) {
 			$startDate = Carbon::now();
 			$endDate = $startDate->copy()->addYears(99); // Lifetime membership
-			
+
 			User::factory()->create(array_merge($userData, [
-				'password' => bcrypt('password'),
 				'phone' => '1234567890',
 				'payment_verified' => true,
 				'trans_ID' => strtoupper(Str::random(8)),
@@ -86,7 +93,7 @@ class DatabaseSeeder extends Seeder
 				'membership_end_date' => $endDate->format('F d, Y'),
 			]));
 		}
-		
+
 		// Seed Research Data
 		$projects = [
 			[
@@ -114,7 +121,7 @@ class DatabaseSeeder extends Seeder
 				'updated_at' => now(),
 			],
 		];
-		
+
 		// Insert research projects with timestamps
 		Research::insert($projects);
 	}
